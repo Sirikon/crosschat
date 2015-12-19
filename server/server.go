@@ -1,9 +1,14 @@
 package server
 
 import "net"
+import "net/http"
+
+import "log"
 import "fmt"
 
 import "strconv"
+
+import "golang.org/x/net/websocket"
 
 // Start the Server service
 func Start() {
@@ -14,13 +19,13 @@ func Start() {
 	msgOut := make(chan Message)
 	connections := make(chan Connection)
 
-	go waitConnections(ln, connections)
+	go waitTCPConnections(ln, connections)
+	go waitWSConnections(connections)
 	go waitUsersToHandle(connections, msgIn, msgOut)
 	go messageBroadcaster(msgIn, msgOut)
 
-	for {
-		// Keep the thread working
-	}
+	http.Handle("/", http.FileServer(http.Dir("server/webroot")))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func messageBroadcaster(msgIn chan Message, msgOut chan Message) {
@@ -30,12 +35,22 @@ func messageBroadcaster(msgIn chan Message, msgOut chan Message) {
 	}
 }
 
-func waitConnections(ln net.Listener, connections chan Connection) {
+func waitTCPConnections(ln net.Listener, connections chan Connection) {
 	for { // will listen for message to process ending in newline (\n)
 		conn, _ := ln.Accept() // run loop forever (or until ctrl-c)
 		fmt.Println("New Connection")
 		connections <- &TCPConnection{conn}
 	}
+}
+
+func waitWSConnections(connections chan Connection) {
+	// websocket handler
+	onConnected := func(conn *websocket.Conn) {
+		connections <- &WSConnection{conn}
+
+		for {}
+	}
+	http.Handle("/wsusers", websocket.Handler(onConnected))
 }
 
 func waitUsersToHandle(connections chan Connection, msgIn chan Message, msgOut chan Message) {
