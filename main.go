@@ -9,15 +9,20 @@ import (
 )
 
 func main() {
-	arg := "client"
-	argsLength := len(os.Args)
-	if argsLength >= 2 {
-		arg = os.Args[1]
+	mode := "client"
+	address := "127.0.0.1:8081"
+
+	if len(os.Args) >= 2 {
+		mode = os.Args[1]
 	}
 
-	if arg == "client" {
-		client.Start()
-	} else if arg == "server" {
+	if len(os.Args) >= 3 {
+		address = os.Args[2]
+	}
+
+	if mode == "client" {
+		client.Start(address)
+	} else if mode == "server" {
 		server.Start()
 	} else {
 		fmt.Println("Wrong argument")

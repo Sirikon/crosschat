@@ -12,7 +12,7 @@ func Start() {
 
 	msgIn := make(chan Message)
 	msgOut := make(chan Message)
-	connections := make(chan net.Conn)
+	connections := make(chan Connection)
 
 	go waitConnections(ln, connections)
 	go waitUsersToHandle(connections, msgIn, msgOut)
@@ -30,15 +30,15 @@ func messageBroadcaster(msgIn chan Message, msgOut chan Message) {
 	}
 }
 
-func waitConnections(ln net.Listener, connections chan net.Conn) {
+func waitConnections(ln net.Listener, connections chan Connection) {
 	for { // will listen for message to process ending in newline (\n)
 		conn, _ := ln.Accept() // run loop forever (or until ctrl-c)
 		fmt.Println("New Connection")
-		connections <- conn
+		connections <- &TCPConnection{conn}
 	}
 }
 
-func waitUsersToHandle(connections chan net.Conn, msgIn chan Message, msgOut chan Message) {
+func waitUsersToHandle(connections chan Connection, msgIn chan Message, msgOut chan Message) {
 	userList := make([]*User, 10)
 	userListCount := 0
 	for {

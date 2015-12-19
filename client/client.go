@@ -6,13 +6,17 @@ import "bufio"
 import "os"
 
 // Start the Client service
-func Start() {
-	conn, _ := net.Dial("tcp", "127.0.0.1:8081")
+func Start(address string) {
+	conn, err := net.Dial("tcp", address)
+	if err != nil {
+		fmt.Println("Couldn't connect to " + address);
+	} else {
+		fmt.Println("--- Connected to " + address + " ---")
+		go waitForMessages(conn)
+		go waitToSendMessages(conn)
 
-	go waitForMessages(conn)
-	go waitToSendMessages(conn)
-
-	for {
+		for {
+		}
 	}
 }
 
