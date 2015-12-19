@@ -1,2 +1,2 @@
-# go-tcpchat
-Experiments with goroutines and TCP
+# CrossChat #
+Experiments with Go, goroutines, TCP and WebSockets
